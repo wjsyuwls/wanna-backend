@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const moment = require("moment");
 require("dotenv").config();
 
 app.use(cors());
@@ -17,8 +16,8 @@ app.use("/api", api);
 const place = require("./routes/place.js");
 app.use("/api/place", place);
 
-const vote = require("./routes/vote.js");
-app.use("/api/vote", vote);
+const review = require("./routes/review.js");
+app.use("/api/review", review);
 
 const port = 3001;
 app.listen(port, () => {
