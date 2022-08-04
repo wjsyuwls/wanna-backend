@@ -41,7 +41,6 @@ app.get("/api/getReview", (req, res) => {
     } else {
       console.log(result);
       if (result.length > 0) {
-        console.log("보내는 내용: " + result);
         res.send(result);
       }
     }
