@@ -23,3 +23,17 @@ const port = 3001;
 app.listen(port, () => {
   console.log(`running on port ${port}`);
 });
+
+app.get("/api/getReview", (req, res) => {
+  db.query("select * from review", [], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send("SQL ERROR");
+    } else {
+      console.log(result);
+      if (result.length > 0) {
+        res.send(result);
+      }
+    }
+  });
+});
