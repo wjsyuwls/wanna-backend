@@ -19,11 +19,38 @@ var smartcontract = new cav.klay.Contract(
   product_contract.abi,
   "0xab416C42e60070a59E6060496A2Fd0Ae49198767"
 );
-var account = cav.klay.accounts.createWithAccountKey(
-  process.env.address,
-  process.env.privatekey
-);
-cav.klay.accounts.wallet.add(account);
+// var account = cav.klay.accounts.createWithAccountKey(
+//   process.env.address,
+//   process.env.privatekey
+// );
+// cav.klay.accounts.wallet.add(account);
+
+const view_voting = async (id) => {
+  let Agree, Disagree, Count;
+  await smartcontract.methods
+    .view_voting(id)
+    .call()
+    .then((receipt) => {
+      Agree = receipt["0"];
+      Disagree = receipt["1"];
+      Count = receipt["2"];
+    });
+  return { Agree, Disagree, Count };
+};
+
+app.get("/", (req, res) => {
+  db.query("select * from review", [], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send("SQL ERROR");
+    } else {
+      console.log(result);
+      if (result.length > 0) {
+        res.send(result);
+      }
+    }
+  });
+});
 
 // 1. 리뷰 등록
 router.post("/add", (req, res) => {
@@ -53,6 +80,8 @@ router.post("/add", (req, res) => {
 router.post("/vote", (req, res) => {
   const id = req.body.id;
   const _a_d = req.body._a_d;
+  const account = req.body.account;
+  console.log(account);
 
   db.query("select * from review where id = ?", [id], (err, result) => {
     if (err) {
@@ -72,13 +101,22 @@ router.post("/vote", (req, res) => {
       console.log(gap);
 
       // 만약 이미 투표한 address라면 return 해주어야함
+      // view_voting(id).then(({ Agree, Disagree, Count }) => {
+      //   const addersses = [...Agree, ...Disagree];
+
+      //   if (addersses.some((d) => d === account.address)) {
+      //     return res.send({
+      //       existed: true,
+      //     });
+      //   }
+      // });
 
       // 투표 가능
       if (gap > 0) {
         smartcontract.methods
           .add_voting(id, _a_d)
           .send({
-            from: account.address,
+            from: account,
             gas: 2000000,
           })
           .then((receipt) => {
@@ -92,14 +130,11 @@ router.post("/vote", (req, res) => {
   });
 });
 
-// 3. 투표 조회 함수로 빼야함
+// 테스트용 투표 조회
 router.get("/view_voting", (req, res) => {
-  smartcontract.methods
-    .view_voting("1")
-    .call()
-    .then((receipt) => {
-      console.log(receipt);
-    });
+  view_voting(req.body.id).then(({ Agree, Disagree, Count }) => {
+    console.log(Agree, Disagree, Count);
+  });
 });
 
 module.exports = router;
