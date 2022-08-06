@@ -68,6 +68,7 @@ router.post("/update/address", (req, res) => {
     }
   );
 });
+
 // delete user
 router.post("/withdraw", (req, res) => {
   const email = req.body.email;

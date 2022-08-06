@@ -10,6 +10,15 @@ app.use(express.urlencoded({ extended: false }));
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const mysql = require("mysql2");
+const db = mysql.createConnection({
+  host: process.env.host,
+  port: process.env.port,
+  user: process.env.user,
+  password: process.env.password,
+  database: process.env.database,
+});
+
 const api = require("./routes/api");
 app.use("/api", api);
 
