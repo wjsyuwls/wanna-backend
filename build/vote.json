@@ -3,9 +3,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "_review_id",
-          "type": "string"
+          "type": "uint256"
         },
         {
           "internalType": "string",
@@ -36,14 +36,19 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "_review_id",
-          "type": "string"
+          "type": "uint256"
         },
         {
           "internalType": "bool",
           "name": "_a_d",
           "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "_voter",
+          "type": "address"
         }
       ],
       "name": "add_voting",
@@ -54,9 +59,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "name": "reviews",
@@ -88,9 +93,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "_review_id",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "name": "view_review",
@@ -122,9 +127,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "_review_id",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "name": "view_voting",
@@ -151,9 +156,9 @@
     {
       "inputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "name": "votings",
