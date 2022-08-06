@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
+require("dotenv").config();
 
 const mysql = require("mysql2");
 const db = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "1234",
-  database: "wanna",
+  host: process.env.host,
+  user: process.env.user,
+  password: process.env.password,
+  database: process.env.database,
 });
 
 router.post("/get", (req, res) => {
@@ -22,7 +23,7 @@ router.post("/get", (req, res) => {
   });
 });
 
-// 더미데이터 insert
+// trash data insert
 router.post("/insert", (req, res) => {
   console.log(req.body);
 

@@ -22,27 +22,19 @@ const db = mysql.createConnection({
 const api = require("./routes/api");
 app.use("/api", api);
 
+const user = require("./routes/user.js");
+app.use("/api/user", user);
+
 const place = require("./routes/place.js");
 app.use("/api/place", place);
 
 const review = require("./routes/review.js");
 app.use("/api/review", review);
 
+const vote = require("./routes/vote.js");
+app.use("/api/review/vote", vote);
+
 const port = 3001;
 app.listen(port, () => {
   console.log(`running on port ${port}`);
-});
-
-app.get("/api/getReview", (req, res) => {
-  db.query("select * from review", [], (err, result) => {
-    if (err) {
-      console.log(err);
-      res.send("SQL ERROR");
-    } else {
-      console.log(result);
-      if (result.length > 0) {
-        res.send(result);
-      }
-    }
-  });
 });

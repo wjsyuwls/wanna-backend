@@ -3,13 +3,13 @@ const router = express.Router();
 
 const mysql = require("mysql2");
 const db = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "1234",
-  database: "wanna",
+  host: process.env.host,
+  user: process.env.user,
+  password: process.env.password,
+  database: process.env.database,
 });
 
-// 유저정보 가져오기
+// get user
 router.get("/getInfo/:email", (req, res) => {
   const email = req.params.email;
   db.query("select * from user WHERE email = ?", [email], (err, result) => {
@@ -25,7 +25,7 @@ router.get("/getInfo/:email", (req, res) => {
   });
 });
 
-// 유저 닉네임정보 업데이트
+// update user nickname
 router.post("/update/nickname", (req, res) => {
   const email = req.body.email;
   const nickname = req.body.nickname;
@@ -48,7 +48,7 @@ router.post("/update/nickname", (req, res) => {
   );
 });
 
-// 유저 지갑주소정보 업데이트
+// update user address
 router.post("/update/address", (req, res) => {
   const email = req.body.email;
   const address = req.body.address;
@@ -68,7 +68,8 @@ router.post("/update/address", (req, res) => {
     }
   );
 });
-// 유저 회원탈퇴
+
+// delete user
 router.post("/withdraw", (req, res) => {
   const email = req.body.email;
 
