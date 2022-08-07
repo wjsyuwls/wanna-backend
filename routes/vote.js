@@ -45,18 +45,9 @@ var master_account = cav.klay.accounts.createWithAccountKey(
 cav.klay.accounts.wallet.add(master_account);
 
 // send token f
-async function token_trans(from, to) {
-  // const newKey = caver.wallet.keyring.generateSingleKey();
-  // const senderKeyring = caver.wallet.keyring.create(address, newKey);
-
-  // keyringContainer.add(senderKeyring);
-  // kip7.setWallet(keyringContainer);
-
-  // const balance = await balanceOf(senderKeyring.address);
-  // console.log(balance);
-
-  var receipt = await kip7.transfer(to, 10, {
-    from: from,
+async function token_trans(address) {
+  var receipt = await kip7.transfer(keyring.address, 10, {
+    from: address,
   });
   return receipt;
 }
@@ -107,7 +98,7 @@ router.get("/check/:id/:account", (req, res) => {
       res.send("SQL ERROR");
     } else {
       // deadline
-      const end = moment(result[0]._date, "YYYY/MM/DD HH:mm:ss");
+      const end = moment(result[0].deadline, "YYYY/MM/DD HH:mm:ss");
       // vote time
       const now = moment(
         moment().format("YYYY/MM/DD HH:mm:ss"),
@@ -165,7 +156,6 @@ router.post("/", (req, res) => {
       gas: 2000000,
     })
     .then((receipt) => {
-      console.log(receipt);
       res.send(receipt);
     });
 });
@@ -181,32 +171,61 @@ router.get("/progress/:id", (req, res) => {
 router.get("/reward/:id", (req, res) => {
   view_voting(req.params.id).then(({ Agree, Disagree, Count }) => {
     if (Agree.length > Disagree.length) {
-      Agree.map((address) => {
-        setTimeout(() => {
-          token_trans(keyring.address, address).then((receipt) => {
-            console.log(receipt);
-          });
-        }, 1000);
-        // kip7
-        //   .transfer(address, 10, {
-        //     // user
-        //     from: keyring.address, // master
-        //   })
-        //   .then((receipt) => {
-        //     console.log(receipt);
-        //   });
-      });
+      // Agree.map((address) => {
+      //   kip7
+      //     .transfer(address, 10, {
+      //       // user
+      //       from: keyring.address, // master
+      //     })
+      //     .then((receipt) => {
+      //       console.log(receipt);
+      //     });
+      // });
+      res.send({ verify: true });
     } else {
-      Disagree.map((address) => {
-        kip7
-          .transfer(address, 10, {
-            // user
-            from: keyring.address, // master
-          })
-          .then((receipt) => {
-            console.log(receipt);
-          });
-      });
+      // Disagree.map((address) => {
+      //   kip7
+      //     .transfer(address, 10, {
+      //       // user
+      //       from: keyring.address, // master
+      //     })
+      //     .then((receipt) => {
+      //       console.log(receipt);
+      //     });
+      // });
+      res.send({ verify: false });
+    }
+  });
+});
+
+// review verify success
+router.post("/verify", (req, res) => {
+  const id = req.body.id;
+  const writer = req.body.writer;
+  const place = req.body.place;
+  const title = req.body.title;
+  const content = req.body.content;
+  const img = req.body.img;
+  const score = req.body.score;
+
+  smartcontract.methods
+    .add_review(id, writer, place, title, content, img, score)
+    .send({
+      from: master_account.address, // master pay gas
+      gas: 2000000,
+    })
+    .then((receipt) => {
+      res.send(receipt);
+    });
+
+  db.query("update review set verify = 1 where id = ?", [id], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send("SQL ERROR");
+    } else {
+      if (result) {
+        res.send("verify success");
+      }
     }
   });
 });
