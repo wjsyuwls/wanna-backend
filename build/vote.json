@@ -3,9 +3,32 @@
     {
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_place",
+          "type": "string"
+        },
+        {
           "internalType": "uint256",
           "name": "_review_id",
           "type": "uint256"
+        }
+      ],
+      "name": "add_place_review",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_review_id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_writer",
+          "type": "address"
         },
         {
           "internalType": "string",
@@ -23,9 +46,14 @@
           "type": "string"
         },
         {
-          "internalType": "address",
-          "name": "_writer",
-          "type": "address"
+          "internalType": "string",
+          "name": "_img",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_score",
+          "type": "uint256"
         }
       ],
       "name": "add_review",
@@ -59,6 +87,30 @@
     {
       "inputs": [
         {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "place_reviews",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
@@ -66,6 +118,11 @@
       ],
       "name": "reviews",
       "outputs": [
+        {
+          "internalType": "address",
+          "name": "writer",
+          "type": "address"
+        },
         {
           "internalType": "string",
           "name": "place",
@@ -82,9 +139,33 @@
           "type": "string"
         },
         {
-          "internalType": "address",
-          "name": "writer",
-          "type": "address"
+          "internalType": "string",
+          "name": "img",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "score",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_place",
+          "type": "string"
+        }
+      ],
+      "name": "view_place_review",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
         }
       ],
       "stateMutability": "view",
@@ -101,24 +182,34 @@
       "name": "view_review",
       "outputs": [
         {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
           "internalType": "address",
           "name": "",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
