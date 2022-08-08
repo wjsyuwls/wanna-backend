@@ -45,14 +45,6 @@ async function view_review(id) {
 }
 
 router.get("/", async (req, res) => {
-  // const getReview = (id, base) => {
-  //   return new Promise((resolve, reject) => {
-  //     view_voting(id).then(({ Agree, Disagree, Count }) => {
-  //       resolve({ ...base, Agree, Disagree, Count });
-  //     });
-  //   });
-  // };
-
   const mergeReviews = () => {
     return new Promise((resolve, reject) => {
       db.query("select * from review", [], async (err, result) => {
@@ -157,7 +149,6 @@ router.get("/verify/:place", async (req, res) => {
   };
 
   const data = await Promise.all(receipt.map((id) => getReviews(id)));
-  // console.log("data", data);
 
   res.send(data);
 });
