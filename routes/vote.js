@@ -11,24 +11,6 @@ const db = mysql.createConnection({
   database: process.env.database,
 });
 
-// setting klaytn
-// var CaverExtKAS = require("caver-js-ext-kas");
-// var caver = new CaverExtKAS();
-
-// var keyringContainer = new caver.keyringContainer();
-// var keyring = keyringContainer.keyring.createFromPrivateKey(
-//   process.env.privatekey
-// );
-// keyringContainer.add(keyring);
-
-// var accesskey = process.env.accesskey;
-// var secretaccesskey = process.env.secretaccesskey;
-// var chainId = 1001; //test net  , 8217 -> main net
-// caver.initKASAPI(chainId, accesskey, secretaccesskey); // KAS reset
-// var kip7 = new caver.kct.kip7(process.env.ki7_address);
-// kip7.setWallet(keyringContainer); // in kip7 wallet setting
-// finish setting klaytn
-
 // connect klaytn contract
 var Caver = require("caver-js");
 var cav = new Caver("https://api.baobab.klaytn.net:8651");
