@@ -10,6 +10,7 @@ const db = mysql.createConnection({
   database: process.env.database,
 });
 
+//모든 가게정보 조회(map에서 사용)
 router.post("/get", (req, res) => {
   db.query("select * from place", [], (err, result) => {
     if (err) {
@@ -23,7 +24,27 @@ router.post("/get", (req, res) => {
   });
 });
 
-// trash data insert
+//해당 가게의 정보 조회(store info에서 사용)
+router.post("/getStoreInfo", (req, res) => {
+  let place_name = req.body.place_name;
+
+  db.query(
+    "select * from place where place_name = ?",
+    [place_name],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        req.send("SQL ERROR");
+      } else {
+        if (result.length > 0) {
+          res.send(result);
+        }
+      }
+    }
+  );
+});
+
+//더미데이터 추가
 router.post("/insert", (req, res) => {
   console.log(req.body);
 
