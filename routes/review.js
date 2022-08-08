@@ -44,29 +44,46 @@ async function view_review(id) {
   return receipt;
 }
 
-router.get("/", (req, res) => {
-  db.query("select * from review", [], (err, result) => {
-    if (err) {
-      console.log(err);
-      res.send("SQL ERROR");
-    } else {
-      if (result.length > 0) {
-        let place = [];
-        result.map((data) => {
-          console.log(data);
-          view_voting(data.id).then(({ Agree, Disagree, Count }) => {
-            place.push({ ...data, Agree, Disagree, Count });
-            console.log({ ...data, Agree, Disagree, Count });
-          });
-        });
+router.get("/", async (req, res) => {
+  // const getReview = (id, base) => {
+  //   return new Promise((resolve, reject) => {
+  //     view_voting(id).then(({ Agree, Disagree, Count }) => {
+  //       resolve({ ...base, Agree, Disagree, Count });
+  //     });
+  //   });
+  // };
 
-        setTimeout(() => {
-          console.log(place);
-          res.send(place);
-        }, 100);
-      }
-    }
-  });
+  const mergeReviews = () => {
+    return new Promise((resolve, reject) => {
+      db.query("select * from review", [], async (err, result) => {
+        if (err) {
+          console.log(err);
+          res.send("SQL ERROR");
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            const data = await Promise.all(
+              result.map(({ id }) => view_voting(id))
+            );
+            let reviews = [];
+            data.map((review, i) =>
+              reviews.push({
+                ...result[i],
+                Agree: review.Agree,
+                Disagree: review.Disagree,
+                Count: review.Count,
+              })
+            );
+            resolve(reviews);
+          } else {
+            resolve([]);
+          }
+        }
+      });
+    });
+  };
+  const data = await mergeReviews();
+  res.send(data);
 });
 
 router.post("/add", (req, res) => {
@@ -106,35 +123,43 @@ router.post("/add", (req, res) => {
 
 router.get("/verify/:place", async (req, res) => {
   const receipt = await view_place_review(req.params.place);
-  let reviews = [];
-  receipt.map(async (id) => {
-    db.query("select * from review where id = ?", [id], async (err, result) => {
-      if (err) {
-        console.log(err);
-        res.send("SQL ERROR");
-      } else {
-        if (result.length > 0) {
-          const sc_review = await view_review(id);
-          console.log(sc_review);
-          const review = {
-            id: result[0].id,
-            title: sc_review["2"],
-            nickname: result[0].nickname,
-            content: sc_review["3"],
-            img: sc_review["4"],
-            score: sc_review["5"],
-            like: result[0]._like,
-            date: result[0]._date,
-          };
-          reviews.push(review);
-        }
-      }
-    });
-  });
 
-  setTimeout(() => {
-    res.send(reviews);
-  }, 100);
+  const getReviews = (id) => {
+    return new Promise((resolve, reject) => {
+      db.query(
+        "select * from review where id = ?",
+        [id],
+        async (err, result) => {
+          if (err) {
+            console.log(err);
+            res.send("SQL ERROR");
+            reject(error);
+          } else {
+            if (result.length > 0) {
+              const sc_review = await view_review(id);
+              // console.log(sc_review);
+              const review = {
+                id: result[0].id,
+                title: sc_review["2"],
+                nickname: result[0].nickname,
+                content: sc_review["3"],
+                img: sc_review["4"],
+                score: sc_review["5"],
+                like: result[0]._like,
+                date: result[0]._date,
+              };
+              resolve(review);
+            }
+          }
+        }
+      );
+    });
+  };
+
+  const data = await Promise.all(receipt.map((id) => getReviews(id)));
+  // console.log("data", data);
+
+  res.send(data);
 });
 
 module.exports = router;

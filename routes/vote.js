@@ -12,21 +12,21 @@ const db = mysql.createConnection({
 });
 
 // setting klaytn
-var CaverExtKAS = require("caver-js-ext-kas");
-var caver = new CaverExtKAS();
+// var CaverExtKAS = require("caver-js-ext-kas");
+// var caver = new CaverExtKAS();
 
-var keyringContainer = new caver.keyringContainer();
-var keyring = keyringContainer.keyring.createFromPrivateKey(
-  process.env.privatekey
-);
-keyringContainer.add(keyring);
+// var keyringContainer = new caver.keyringContainer();
+// var keyring = keyringContainer.keyring.createFromPrivateKey(
+//   process.env.privatekey
+// );
+// keyringContainer.add(keyring);
 
-var accesskey = process.env.accesskey;
-var secretaccesskey = process.env.secretaccesskey;
-var chainId = 1001; //test net  , 8217 -> main net
-caver.initKASAPI(chainId, accesskey, secretaccesskey); // KAS reset
-var kip7 = new caver.kct.kip7(process.env.ki7_address);
-kip7.setWallet(keyringContainer); // in kip7 wallet setting
+// var accesskey = process.env.accesskey;
+// var secretaccesskey = process.env.secretaccesskey;
+// var chainId = 1001; //test net  , 8217 -> main net
+// caver.initKASAPI(chainId, accesskey, secretaccesskey); // KAS reset
+// var kip7 = new caver.kct.kip7(process.env.ki7_address);
+// kip7.setWallet(keyringContainer); // in kip7 wallet setting
 // finish setting klaytn
 
 // connect klaytn contract
@@ -37,6 +37,14 @@ var smartcontract = new cav.klay.Contract(
   product_contract.abi,
   process.env.contract_account
 );
+
+// connect token contract
+var token_contract = require("../build/token.json");
+var tokencontract = new cav.klay.Contract(
+  token_contract.abi,
+  "0xf0Adb6176637f063e673b44090a3e120389E9A7C"
+);
+
 // wanna master account
 var master_account = cav.klay.accounts.createWithAccountKey(
   process.env.address,
@@ -46,17 +54,29 @@ cav.klay.accounts.wallet.add(master_account);
 
 // send token f
 async function token_trans(address) {
-  var receipt = await kip7.transfer(keyring.address, 10, {
-    from: address,
-  });
+  const receipt = await tokencontract.methods
+    .transferFrom(address, master_account.address, 10)
+    .send({
+      from: master_account.address,
+      gas: 2000000,
+    });
   return receipt;
 }
 
-// get balnace f
+// send reward f
+async function reward_trans(address, amount) {
+  const receipt = await tokencontract.methods
+    .transferFrom(master_account.address, address, amount)
+    .send({
+      from: master_account.address,
+      gas: 2000000,
+    });
+  return receipt;
+}
+
+// get balance f
 async function balanceOf(address) {
-  var receipt = await kip7.balanceOf(address, {
-    from: keyring.address,
-  });
+  const receipt = await tokencontract.methods.balance(address).call();
   return receipt;
 }
 
@@ -77,12 +97,11 @@ const view_voting = async (id) => {
 // user token > 10
 router.get("/balance/:account", function (req, res) {
   const address = req.params.account;
-  console.log(address);
   balanceOf(address).then((balance) => {
-    if (balance > 10) {
-      res.send({ enough: true, message: "enough token" });
+    if (balance >= 10) {
+      res.send({ enough: true, message: "enough token", balance: balance });
     } else {
-      res.send({ enough: false, message: "lack token" });
+      res.send({ enough: false, message: "lack token", balance: balance });
     }
   });
 });
@@ -143,6 +162,24 @@ router.post("/transfer", (req, res) => {
   });
 });
 
+// test
+router.post("/transTest", async (req, res) => {
+  const address = req.body.address;
+  console.log(address);
+
+  await tokencontract.methods
+    .transferFrom(master_account.address, address, 10)
+    .send({
+      from: master_account.address,
+      gas: 2000000,
+    })
+    .then(async (receipt) => {
+      await balanceOf(address).then((balance) => {
+        res.send(balance);
+      });
+    });
+});
+
 // vote
 router.post("/", (req, res) => {
   const id = req.body.id;
@@ -168,38 +205,41 @@ router.get("/progress/:id", (req, res) => {
 });
 
 // pay reward
-router.get("/reward/:id", (req, res) => {
-  view_voting(req.params.id).then(({ Agree, Disagree, Count }) => {
-    if (Agree.length > Disagree.length) {
-      // Agree.map((address) => {
-      //   kip7
-      //     .transfer(address, 10, {
-      //       // user
-      //       from: keyring.address, // master
-      //     })
-      //     .then((receipt) => {
-      //       console.log(receipt);
-      //     });
-      // });
-      res.send({ verify: true });
-    } else {
-      // Disagree.map((address) => {
-      //   kip7
-      //     .transfer(address, 10, {
-      //       // user
-      //       from: keyring.address, // master
-      //     })
-      //     .then((receipt) => {
-      //       console.log(receipt);
-      //     });
-      // });
-      res.send({ verify: false });
-    }
-  });
+router.get("/reward/:id", async (req, res) => {
+  const votingResult = await view_voting(req.params.id);
+  const { Agree, Disagree, Count } = votingResult;
+
+  if (Agree.length > Disagree.length) {
+    const amount = (Count * 10) / Agree.length;
+    const chanining = await tokencontract.methods.transferFromMulti(
+      master_account.address,
+      [...Agree],
+      amount
+    );
+    await chanining.send({
+      from: master_account.address,
+      gas: 2000000,
+    });
+
+    res.send({ verify: true });
+  } else {
+    const amount = (Count * 10) / Disagree.length;
+    const chanining = await tokencontract.methods.transferFromMulti(
+      master_account.address,
+      [...Disagree],
+      amount
+    );
+    await chanining.send({
+      from: master_account.address,
+      gas: 2000000,
+    });
+
+    res.send({ verify: false });
+  }
 });
 
 // review verify success
-router.post("/verify", (req, res) => {
+router.post("/verify", async (req, res) => {
   const id = req.body.id;
   const writer = req.body.writer;
   const place = req.body.place;
@@ -208,28 +248,29 @@ router.post("/verify", (req, res) => {
   const img = req.body.img;
   const score = req.body.score;
 
-  smartcontract.methods
+  await smartcontract.methods
     .add_review(id, writer, place, title, content, img, score)
     .send({
       from: master_account.address, // master pay gas
       gas: 2000000,
     })
-    .then((receipt) => {
-      res.send(receipt);
-    });
-
-  db.query("update review set verify = 1 where id = ?", [id], (err, result) => {
-    if (err) {
-      console.log(err);
-      res.send("SQL ERROR");
-    } else {
-      if (result) {
-        res.send("verify success");
-      }
-    }
-  });
+    .then(() => [
+      db.query(
+        "update review set verify = 1 where id = ?",
+        [id],
+        (err, result) => {
+          if (err) {
+            console.log(err);
+            res.send("SQL ERROR");
+          } else {
+            if (result) {
+              res.send("verify success");
+            }
+          }
+        }
+      ),
+    ])
+    .catch(() => res.sendStatus(500));
 });
-
-// vote even
 
 module.exports = router;
