@@ -44,7 +44,7 @@ router.post("/getStoreInfo", (req, res) => {
   );
 });
 
-//더미데이터 추가
+// trash data insert
 router.post("/insert", (req, res) => {
   console.log(req.body);
 

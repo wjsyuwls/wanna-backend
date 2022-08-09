@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment");
 require("dotenv").config();
+const multer = require("multer");
 
 const mysql = require("mysql2");
 const db = mysql.createConnection({
@@ -78,16 +79,40 @@ router.get("/", async (req, res) => {
   res.send(data);
 });
 
-router.post("/add", (req, res) => {
+//파일 업로드
+let storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, "uploadedFiles/");
+  },
+  filename(req, file, cb) {
+    cb(null, `${Date.now()}__${file.originalname}`);
+  },
+});
+var upload = multer({ dest: "uploadedFiles/" });
+var uploadWithOriginalFilename = multer({ storage: storage });
+
+//리뷰 추가+파일 업로드
+router.post("/add", uploadWithOriginalFilename.single("img"), (req, res) => {
   const place_name = req.body.place_name;
   const title = req.body.title;
   const nickname = req.body.nickname;
   const address = req.body.address;
   const score = req.body.score;
-  const img = req.body.img;
+  const img = req.file.path;
   const content = req.body.content;
   const _date = moment().format("YYYY/MM/DD HH:mm:ss");
   const deadline = moment().add(7, "days").format("YYYY/MM/DD HH:mm:ss");
+
+  console.log("장소", place_name);
+  console.log("제목", title);
+  console.log("닉네임", nickname);
+  console.log("점수", score);
+  console.log("내용", content);
+  console.log("등록일", _date);
+  console.log("마감일", deadline);
+  console.log("사진", img);
+
+  console.log(img.split("/"));
 
   db.query(
     "insert into review (place_name, title, nickname, address, score, img, content, _date, deadline) values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -98,16 +123,17 @@ router.post("/add", (req, res) => {
       address,
       score,
       img,
+      //path.normalize("http://localhost:3001/" + img),
       content,
       _date,
       deadline,
     ],
-    (err, result) => {
+    (err) => {
       if (err) {
         console.log(err);
         res.send("SQL ERROR");
       } else {
-        res.send(result);
+        console.log("데이터 삽입 성공!!");
       }
     }
   );
@@ -149,7 +175,6 @@ router.get("/verify/:place", async (req, res) => {
   };
 
   const data = await Promise.all(receipt.map((id) => getReviews(id)));
-
   res.send(data);
 });
 
