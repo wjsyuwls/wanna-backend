@@ -10,6 +10,7 @@ const db = mysql.createConnection({
   database: process.env.database,
 });
 
+//모든 가게정보 조회(map에서 사용)
 router.post("/get", (req, res) => {
   db.query("select * from place", [], (err, result) => {
     if (err) {
