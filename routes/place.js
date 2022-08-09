@@ -23,6 +23,26 @@ router.post("/get", (req, res) => {
   });
 });
 
+//해당 가게의 정보 조회(store info에서 사용)
+router.post("/getStoreInfo", (req, res) => {
+  let place_name = req.body.place_name;
+
+  db.query(
+    "select * from place where place_name = ?",
+    [place_name],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        req.send("SQL ERROR");
+      } else {
+        if (result.length > 0) {
+          res.send(result);
+        }
+      }
+    }
+  );
+});
+
 // trash data insert
 router.post("/insert", (req, res) => {
   console.log(req.body);
