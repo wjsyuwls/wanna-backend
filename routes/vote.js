@@ -230,29 +230,25 @@ router.post("/verify", async (req, res) => {
   const img = req.body.img;
   const score = req.body.score;
 
-  await smartcontract.methods
+  const receipt = await smartcontract.methods
     .add_review(id, writer, place, title, content, img, score)
     .send({
       from: master_account.address, // master pay gas
       gas: 2000000,
-    })
-    .then(() => [
-      db.query(
-        "update review set verify = 1 where id = ?",
-        [id],
-        (err, result) => {
-          if (err) {
-            console.log(err);
-            res.send("SQL ERROR");
-          } else {
-            if (result) {
-              res.send("verify success");
-            }
-          }
-        }
-      ),
-    ])
-    .catch(() => res.sendStatus(500));
+    });
+
+  console.log(receipt);
+
+  db.query("update review set verify = 1 where id = ?", [id], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send("SQL ERROR");
+    } else {
+      if (result) {
+        res.send({ message: "verify success" });
+      }
+    }
+  });
 });
 
 module.exports = router;
