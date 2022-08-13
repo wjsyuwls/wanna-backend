@@ -45,34 +45,39 @@ async function view_review(id) {
   return receipt;
 }
 
-router.get("/", async (req, res) => {
+router.get("/:place_name", async (req, res) => {
+  const place_name = req.params.place_name;
   const mergeReviews = () => {
     return new Promise((resolve, reject) => {
-      db.query("select * from review", [], async (err, result) => {
-        if (err) {
-          console.log(err);
-          res.send("SQL ERROR");
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            const data = await Promise.all(
-              result.map(({ id }) => view_voting(id))
-            );
-            let reviews = [];
-            data.map((review, i) =>
-              reviews.push({
-                ...result[i],
-                Agree: review.Agree,
-                Disagree: review.Disagree,
-                Count: review.Count,
-              })
-            );
-            resolve(reviews);
+      db.query(
+        "select * from review where place_name = ?",
+        [place_name],
+        async (err, result) => {
+          if (err) {
+            console.log(err);
+            res.send("SQL ERROR");
+            reject(err);
           } else {
-            resolve([]);
+            if (result.length > 0) {
+              const data = await Promise.all(
+                result.map(({ id }) => view_voting(id))
+              );
+              let reviews = [];
+              data.map((review, i) =>
+                reviews.push({
+                  ...result[i],
+                  Agree: review.Agree,
+                  Disagree: review.Disagree,
+                  Count: review.Count,
+                })
+              );
+              resolve(reviews);
+            } else {
+              resolve([]);
+            }
           }
         }
-      });
+      );
     });
   };
   const data = await mergeReviews();
@@ -128,11 +133,12 @@ router.post("/add", uploadWithOriginalFilename.single("img"), (req, res) => {
       _date,
       deadline,
     ],
-    (err) => {
+    (err, result) => {
       if (err) {
         console.log(err);
         res.send("SQL ERROR");
       } else {
+        res.send(result);
         console.log("데이터 삽입 성공!!");
       }
     }
